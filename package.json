@@ -16,7 +16,7 @@
     "url": "https://github.com/gcq/etorn-torns/issues"
   },
   "dependencies": {
-    "rpi-gpio": "^0.7.0",
+    "lodash": "^4.17.4",
     "rpio": "^0.9.16"
   }
 }
