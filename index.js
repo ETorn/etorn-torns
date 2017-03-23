@@ -1,4 +1,4 @@
-//var rpio = require('rpio');
+var rpio = require('./rpio-shim');
 var _ = require('lodash');
 var http = require('http');
 var express = require('express');
@@ -6,13 +6,6 @@ var cors = require('cors');
 var WebSocketServer = require('websocket').server;
 var request = require('request');
 
-// rpio.init();
-//
-// rpio.open(40, rpio.INPUT,rpio.PULL_UP);
-//
-// rpio.poll(40, _.throttle(function(pin) {
-//     console.log('pressed', Date.now());
-// }, 500, {trailing: false}), rpio.POLL_LOW);
 
 var address = 'http://localhost:8080';
 
@@ -81,15 +74,26 @@ wsServer.on('request', function(request) {
   });
 });
 
-var turn = 0;
+var setTurn = function setTurn(t) {
+  if (browser)
+    browser.send(JSON.stringify({storeTurn: t}));
+};
 
 setInterval(function(){
   getStoreTurn(storeId, function(err, res) {
-    if (res !== turn) {
-      turn = res;
-
-      if (browser)
-        browser.send(JSON.stringify({storeTurn: turn}));
-    }
+    if (res)
+      setTurn(res);
   });
 }, 500);
+
+rpio.init();
+
+rpio.open(40, rpio.INPUT,rpio.PULL_UP);
+
+rpio.poll(40, _.throttle(function(pin) {
+    console.log('pressed', Date.now());
+    advanceStoreTurn(storeId, function(err, res) {
+      if (res)
+        setTurn(res);
+    });
+}, 500, {trailing: false}), rpio.POLL_LOW);
