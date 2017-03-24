@@ -5,11 +5,27 @@ var express = require('express');
 var cors = require('cors');
 var WebSocketServer = require('websocket').server;
 var request = require('request');
+var mqtt = require('mqtt');
 
 
 var address = 'http://localhost:8080';
 
-var storeId = '58d3a4fd9b48fd0bf0d2f09a';
+var storeId = '58d455f4338a57238cd675b9';
+
+var mqttClient = mqtt.connect('mqtt://localhost');
+
+mqttClient.subscribe('etorn/store/' + storeId + '/storeTurn');
+
+mqttClient.on('message', function(topic, message) {
+  console.log('Got turn', message.toString());
+  setTurn(message.toString());
+});
+
+var browser;
+var setTurn = function setTurn(t) {
+  if (browser)
+    browser.send(JSON.stringify({storeTurn: t}));
+};
 
 var advanceStoreTurn = function advanceStoreTurn(storeId, cb) {
   request({
@@ -52,12 +68,12 @@ var wsServer = new WebSocketServer({
   httpServer: app.server
 });
 
-var browser;
-
 wsServer.on('request', function(request) {
   browser = request.accept(null, request.origin);
 
   browser.send(JSON.stringify({storeTurn: '...'}));
+
+  mqttClient.publish('etorn/store/' + storeId + '/idk');
 
   browser.on('message', function(message) {
     console.log('mesage');
@@ -74,26 +90,11 @@ wsServer.on('request', function(request) {
   });
 });
 
-var setTurn = function setTurn(t) {
-  if (browser)
-    browser.send(JSON.stringify({storeTurn: t}));
-};
-
-setInterval(function(){
-  getStoreTurn(storeId, function(err, res) {
-    if (res)
-      setTurn(res);
-  });
-}, 500);
-
 rpio.init();
 
 rpio.open(40, rpio.INPUT,rpio.PULL_UP);
 
 rpio.poll(40, _.throttle(function(pin) {
     console.log('pressed', Date.now());
-    advanceStoreTurn(storeId, function(err, res) {
-      if (res)
-        setTurn(res);
-    });
+    mqttClient.publish('etorn/store/' + storeId + '/advance');
 }, 500, {trailing: false}), rpio.POLL_LOW);

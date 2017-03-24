@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "browserify site/index.js -d -o site/bundle.js",
+    "build": "browserify site/index.js -o site/bundle.js -v",
     "watch": "watchify site/index.js -o site/bundle.js -v"
   },
   "repository": {
@@ -23,6 +23,7 @@
     "cors": "^2.8.1",
     "express": "^4.15.2",
     "lodash": "^4.17.4",
+    "mqtt": "^2.5.0",
     "request": "^2.81.0",
     "rpio": "^0.9.16",
     "websocket": "^1.0.24"
