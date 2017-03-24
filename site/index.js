@@ -1,3 +1,5 @@
+var config = require('../config');
+
 var updateDisplay = function updateDisplay(i) {
   document.querySelector('#torn').textContent = i;
 };
@@ -6,7 +8,7 @@ var connection;
 
 var doConnect = function doConnect() {
   console.log('connecting...');
-  connection = new WebSocket('ws://127.0.0.1:80');
+  connection = new WebSocket('ws://127.0.0.1:' + config.port);
 
   connection.onopen = function () {
     console.log('open');
