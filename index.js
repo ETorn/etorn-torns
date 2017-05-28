@@ -8,12 +8,14 @@ var WebSocketServer = require('websocket').server;
 var request = require('request');
 var mqtt = require('mqtt');
 
+var config = require('./config');
 
-var address = 'http://localhost:8080';
+
+var address = config.node.address;
 
 var storeId = '5925d886f90da322d8f2f856';
 
-var mqttClient = mqtt.connect('mqtt://localhost');
+var mqttClient = mqtt.connect(config.mqtt.address);
 
 mqttClient.subscribe('etorn/store/' + storeId + '/storeTurn');
 
@@ -30,7 +32,7 @@ var setTurn = function setTurn(t) {
 
 var advanceStoreTurn = function advanceStoreTurn(storeId, cb) {
   request({
-    url: address + "/stores/" + storeId + '/storeTurn',
+    url: config.node.address + "/stores/" + storeId + '/storeTurn',
     method: 'PUT',
     json: true,
     body: {}
@@ -41,7 +43,7 @@ var advanceStoreTurn = function advanceStoreTurn(storeId, cb) {
 
 var getStoreTurn = function getStoreTurn(storeId, cb) {
   request({
-    url: address + "/stores/" + storeId,
+    url: config.node.address + "/stores/" + storeId,
     method: 'GET',
     json: true,
     body: {}
@@ -66,8 +68,8 @@ app.get("/", function(req, res){
 
 app.server = http.createServer(app);
 
-app.server.listen(80, function(err) {
-  console.log('Listening on :80');
+app.server.listen(8081, function(err) {
+  console.log('Listening on :8081');
 });
 
 var wsServer = new WebSocketServer({
