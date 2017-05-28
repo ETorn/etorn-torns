@@ -13,7 +13,7 @@ var config = require('./config');
 
 var address = config.node.address;
 
-var storeId = '5925d886f90da322d8f2f856';
+var storeId = config.node.storeId;
 
 var mqttClient = mqtt.connect(config.mqtt.address);
 
