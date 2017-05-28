@@ -5,6 +5,6 @@ module.exports = {
   mqtt: {
     address: 'mqtt://192.168.137.1'
   },
-  port: 8081,
+  port: 8082,
   storeId: "5925d886f90da322d8f2f856"
 };

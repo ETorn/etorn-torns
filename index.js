@@ -13,7 +13,7 @@ var config = require('./config');
 
 var address = config.node.address;
 
-var storeId = config.node.storeId;
+var storeId = config.storeId;
 
 var mqttClient = mqtt.connect(config.mqtt.address);
 
@@ -68,8 +68,8 @@ app.get("/", function(req, res){
 
 app.server = http.createServer(app);
 
-app.server.listen(8081, function(err) {
-  console.log('Listening on :8081');
+app.server.listen(config.port, function(err) {
+  console.log('Listening on :' + config.port);
 });
 
 var wsServer = new WebSocketServer({

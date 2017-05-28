@@ -16,7 +16,7 @@ window.onclick = function(){
 
 var doConnect = function doConnect() {
   console.log('connecting...');
-  connection = new WebSocket('ws://127.0.0.1:' + config.port);
+  connection = new WebSocket('ws://localhost:' + config.port);
 
   connection.onopen = function () {
     console.log('open');
