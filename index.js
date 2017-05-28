@@ -1,4 +1,5 @@
-var rpio = require('./rpio-shim');
+var optional = require('optional');
+var rpio = optional('rpio');
 var _ = require('lodash');
 var http = require('http');
 var express = require('express');
@@ -10,7 +11,7 @@ var mqtt = require('mqtt');
 
 var address = 'http://localhost:8080';
 
-var storeId = '58d455f4338a57238cd675b9';
+var storeId = '5925d886f90da322d8f2f856';
 
 var mqttClient = mqtt.connect('mqtt://localhost');
 
@@ -49,6 +50,11 @@ var getStoreTurn = function getStoreTurn(storeId, cb) {
   });
 };
 
+var buttonPress = function buttonPress() {
+  console.log('pressed', Date.now());
+  mqttClient.publish('etorn/store/' + storeId + '/advance');
+}
+
 var app = express();
 
 app.use(express.static("site"));
@@ -76,11 +82,12 @@ wsServer.on('request', function(request) {
   mqttClient.publish('etorn/store/' + storeId + '/idk');
 
   browser.on('message', function(message) {
-    console.log('mesage');
     if (message.type === 'utf8') {
       console.log('Message utf-8');
-      var json = JSON.parse(message.data);
-      console.log(json);
+      var json = JSON.parse(message.utf8Data);
+
+      if (json.type === 'click')
+        buttonPress();
     }
   });
 
@@ -90,11 +97,12 @@ wsServer.on('request', function(request) {
   });
 });
 
-rpio.init();
+if (rpio) {
+  rpio.init();
 
-rpio.open(40, rpio.INPUT,rpio.PULL_UP);
+  rpio.open(40, rpio.INPUT,rpio.PULL_UP);
 
-rpio.poll(40, _.throttle(function(pin) {
-    console.log('pressed', Date.now());
-    mqttClient.publish('etorn/store/' + storeId + '/advance');
-}, 500, {trailing: false}), rpio.POLL_LOW);
+  rpio.poll(40, _.throttle(function(pin) {
+    buttonPress();
+  }, 500, {trailing: false}), rpio.POLL_LOW);
+}
