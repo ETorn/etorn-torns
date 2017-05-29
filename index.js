@@ -13,11 +13,10 @@ var config = require('./config');
 
 var address = config.node.address;
 
-var storeId = config.storeId;
+var storeId;
+var identifier = config.identifier;
 
 var mqttClient = mqtt.connect(config.mqtt.address);
-
-mqttClient.subscribe('etorn/store/' + storeId + '/storeTurn');
 
 mqttClient.on('message', function(topic, message) {
   console.log('Got turn', message.toString());
@@ -29,6 +28,17 @@ var setTurn = function setTurn(t) {
   if (browser)
     browser.send(JSON.stringify({storeTurn: t}));
 };
+
+var getStoreId = function getStoreId(identifier, cb) {
+  request({
+    url: config.node.address + "/screens/identifier/" + identifier,
+    method: 'GET',
+    json: true
+  }, function(err, res, body) {
+    console.log("bodyyy", body);
+    cb(err, body.screen.storeId);
+  });
+}
 
 var advanceStoreTurn = function advanceStoreTurn(storeId, cb) {
   request({
@@ -68,9 +78,15 @@ app.get("/", function(req, res){
 
 app.server = http.createServer(app);
 
-app.server.listen(config.port, function(err) {
-  console.log('Listening on :' + config.port);
+getStoreId(identifier, function (err, id) {
+  storeId = id;
+  console.log("storeId", storeId);
+  mqttClient.subscribe('etorn/store/' + storeId + '/storeTurn');
+  app.server.listen(config.port, function(err) {
+    console.log('Listening on :' + config.port);
+  });
 });
+
 
 var wsServer = new WebSocketServer({
   httpServer: app.server
